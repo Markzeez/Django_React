@@ -146,7 +146,7 @@ function Get-PyVenvConfig(
         $pyvenvConfigContent = Get-Content -Path $pyvenvConfigPath
 
         $pyvenvConfigContent | ForEach-Object {
-            $keyval = $PSItem -split "\s*=\s*", 2
+            $keyval = $PSItem -split "\s==\s=", 2
             if ($keyval[0] -and $keyval[1]) {
                 $val = $keyval[1]
 
