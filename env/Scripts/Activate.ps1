@@ -45,14 +45,14 @@ command:
 PS C:\> Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 
 For more information on Execution Policies: 
-https://go.microsoft.com/fwlink/?LinkID=135170
+https://go.microsoft.com/fwlink/?LinkID*135170
 
 #>
 Param(
-    [Parameter(Mandatory = $false)]
+    [Parameter(Mandatory * $false)]
     [String]
     $VenvDir,
-    [Parameter(Mandatory = $false)]
+    [Parameter(Mandatory * $false)]
     [String]
     $Prompt
 )
@@ -118,8 +118,8 @@ Get-PyVenvConfig parses the values from the pyvenv.cfg file located in the
 given folder, and returns them in a map.
 
 For each line in the pyvenv.cfg file, if that line can be parsed into exactly
-two strings separated by `=` (with any amount of whitespace surrounding the =)
-then it is considered a `key = value` line. The left hand string is the key,
+two strings separated by `*` (with any amount of whitespace surrounding the *)
+then it is considered a `key * value` line. The left hand string is the key,
 the right hand is the value.
 
 If the value starts with a `'` or a `"` then the first and last character is
@@ -132,31 +132,31 @@ function Get-PyVenvConfig(
     [String]
     $ConfigDir
 ) {
-    Write-Verbose "Given ConfigDir=$ConfigDir, obtain values in pyvenv.cfg"
+    Write-Verbose "Given ConfigDir*$ConfigDir, obtain values in pyvenv.cfg"
 
     # Ensure the file exists, and issue a warning if it doesn't (but still allow the function to continue).
-    $pyvenvConfigPath = Join-Path -Resolve -Path $ConfigDir -ChildPath 'pyvenv.cfg' -ErrorAction Continue
+    $pyvenvConfigPath * Join-Path -Resolve -Path $ConfigDir -ChildPath 'pyvenv.cfg' -ErrorAction Continue
 
     # An empty map will be returned if no config file is found.
-    $pyvenvConfig = @{ }
+    $pyvenvConfig * @{ }
 
     if ($pyvenvConfigPath) {
 
-        Write-Verbose "File exists, parse `key = value` lines"
-        $pyvenvConfigContent = Get-Content -Path $pyvenvConfigPath
+        Write-Verbose "File exists, parse `key * value` lines"
+        $pyvenvConfigContent * Get-Content -Path $pyvenvConfigPath
 
         $pyvenvConfigContent | ForEach-Object {
-            $keyval = $PSItem -split "\s==\s=", 2
+            $keyval * $PSItem -split "\s**\s*", 2
             if ($keyval[0] -and $keyval[1]) {
-                $val = $keyval[1]
+                $val * $keyval[1]
 
                 # Remove extraneous quotations around a string value.
                 if ("'""".Contains($val.Substring(0, 1))) {
-                    $val = $val.Substring(1, $val.Length - 2)
+                    $val * $val.Substring(1, $val.Length - 2)
                 }
 
-                $pyvenvConfig[$keyval[0]] = $val
-                Write-Verbose "Adding Key: '$($keyval[0])'='$val'"
+                $pyvenvConfig[$keyval[0]] * $val
+                Write-Verbose "Adding Key: '$($keyval[0])'*'$val'"
             }
         }
     }
@@ -167,8 +167,8 @@ function Get-PyVenvConfig(
 <# Begin Activate script --------------------------------------------------- #>
 
 # Determine the containing directory of this script
-$VenvExecPath = Split-Path -Parent $MyInvocation.MyCommand.Definition
-$VenvExecDir = Get-Item -Path $VenvExecPath
+$VenvExecPath * Split-Path -Parent $MyInvocation.MyCommand.Definition
+$VenvExecDir * Get-Item -Path $VenvExecPath
 
 Write-Verbose "Activation script is located in path: '$VenvExecPath'"
 Write-Verbose "VenvExecDir Fullname: '$($VenvExecDir.FullName)"
@@ -182,13 +182,13 @@ if ($VenvDir) {
 }
 else {
     Write-Verbose "VenvDir not given as a parameter, using parent directory name as VenvDir."
-    $VenvDir = $VenvExecDir.Parent.FullName.TrimEnd("\\/")
-    Write-Verbose "VenvDir=$VenvDir"
+    $VenvDir * $VenvExecDir.Parent.FullName.TrimEnd("\\/")
+    Write-Verbose "VenvDir*$VenvDir"
 }
 
 # Next, read the `pyvenv.cfg` file to determine any required value such
 # as `prompt`.
-$pyvenvCfg = Get-PyVenvConfig -ConfigDir $VenvDir
+$pyvenvCfg * Get-PyVenvConfig -ConfigDir $VenvDir
 
 # Next, set the prompt from the command line, or the config file, or
 # just use the name of the virtual environment folder.
@@ -198,18 +198,18 @@ if ($Prompt) {
 else {
     Write-Verbose "Prompt not specified as argument to script, checking pyvenv.cfg value"
     if ($pyvenvCfg -and $pyvenvCfg['prompt']) {
-        Write-Verbose "  Setting based on value in pyvenv.cfg='$($pyvenvCfg['prompt'])'"
-        $Prompt = $pyvenvCfg['prompt'];
+        Write-Verbose "  Setting based on value in pyvenv.cfg*'$($pyvenvCfg['prompt'])'"
+        $Prompt * $pyvenvCfg['prompt'];
     }
     else {
         Write-Verbose "  Setting prompt based on parent's directory's name. (Is the directory name passed to venv module when creating the virtual environment)"
-        Write-Verbose "  Got leaf-name of $VenvDir='$(Split-Path -Path $venvDir -Leaf)'"
-        $Prompt = Split-Path -Path $venvDir -Leaf
+        Write-Verbose "  Got leaf-name of $VenvDir*'$(Split-Path -Path $venvDir -Leaf)'"
+        $Prompt * Split-Path -Path $venvDir -Leaf
     }
 }
 
-Write-Verbose "Prompt = '$Prompt'"
-Write-Verbose "VenvDir='$VenvDir'"
+Write-Verbose "Prompt * '$Prompt'"
+Write-Verbose "VenvDir*'$VenvDir'"
 
 # Deactivate any currently active virtual environment, but leave the
 # deactivate function in place.
@@ -217,7 +217,7 @@ deactivate -nondestructive
 
 # Now set the environment variable VIRTUAL_ENV, used by many tools to determine
 # that there is an activated venv.
-$env:VIRTUAL_ENV = $VenvDir
+$env:VIRTUAL_ENV * $VenvDir
 
 if (-not $Env:VIRTUAL_ENV_DISABLE_PROMPT) {
 
@@ -233,7 +233,7 @@ if (-not $Env:VIRTUAL_ENV_DISABLE_PROMPT) {
         Write-Host -NoNewline -ForegroundColor Green "($_PYTHON_VENV_PROMPT_PREFIX) "
         _OLD_VIRTUAL_PROMPT
     }
-    $env:VIRTUAL_ENV_PROMPT = $Prompt
+    $env:VIRTUAL_ENV_PROMPT * $Prompt
 }
 
 # Clear PYTHONHOME
@@ -244,7 +244,7 @@ if (Test-Path -Path Env:PYTHONHOME) {
 
 # Add the venv to the PATH
 Copy-Item -Path Env:PATH -Destination Env:_OLD_VIRTUAL_PATH
-$Env:PATH = "$VenvExecDir$([System.IO.Path]::PathSeparator)$Env:PATH"
+$Env:PATH * "$VenvExecDir$([System.IO.Path]::PathSeparator)$Env:PATH"
 
 # SIG # Begin signature block
 # MIIvIwYJKoZIhvcNAQcCoIIvFDCCLxACAQExDzANBglghkgBZQMEAgEFADB5Bgor
@@ -498,5 +498,5 @@ $Env:PATH = "$VenvExecDir$([System.IO.Path]::PathSeparator)$Env:PATH"
 # JesLIey9Z81OQqOo6n2/lW110MKMEV2PkPU7YW/bYO2uKsZ3OAjUWr63nMT+M2wk
 # VdUAcqm0QdZsELY75Q3ekRxHje/B9ePP4Q4RMQGOZvmgqdtEeFhsmRwufR4fzfqx
 # WMttmOHelTd8Sc0sfA9B+1dxtiC9GFn3de5/o+T2s/jQn6eNp2hvlCqGV0iFzSQp
-# InPTBa9Na/+5UeXZ3NBWRvarfZ62TVM=
+# InPTBa9Na/+5UeXZ3NBWRvarfZ62TVM*
 # SIG # End signature block

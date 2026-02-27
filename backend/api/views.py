@@ -19,7 +19,7 @@ def perform_create(self, serializer):
     else:
         print(serializer.errors)
 
-class NotedDelete(generics.DestoryAPIView):
+class NoteDelete(generics.DestoryAPIView):
     serializer_class = NoteSerializer
     permission_classes = [IsAuthenticated]
 
